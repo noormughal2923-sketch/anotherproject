@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSuperAdmin } from "@/lib/auth";
 import { normalizeEmail } from "@/lib/email";
 import { logAudit } from "@/lib/audit";
-import { AUDIT_ACTIONS } from "@/lib/constants";
+import { AUDIT_ACTIONS, ADMIN_BASE_PATH } from "@/lib/constants";
 
 const createAdminSchema = z.object({
   email: z.email("Valid email required"),
@@ -65,6 +65,8 @@ export async function createAdminAction(
   });
 
   revalidatePath("/admin/admins");
+  revalidatePath(`${ADMIN_BASE_PATH}/admins`);
+  revalidatePath(ADMIN_BASE_PATH);
 }
 
 export async function toggleAdminStatusAction(id: string): Promise<void> {
@@ -90,6 +92,8 @@ export async function toggleAdminStatusAction(id: string): Promise<void> {
   });
 
   revalidatePath("/admin/admins");
+  revalidatePath(`${ADMIN_BASE_PATH}/admins`);
+  revalidatePath(ADMIN_BASE_PATH);
 }
 
 export async function deleteAdminAction(id: string): Promise<void> {
@@ -121,4 +125,6 @@ export async function deleteAdminAction(id: string): Promise<void> {
   });
 
   revalidatePath("/admin/admins");
+  revalidatePath(`${ADMIN_BASE_PATH}/admins`);
+  revalidatePath(ADMIN_BASE_PATH);
 }
