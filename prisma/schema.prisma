@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Participant / public-facing
+// ---------------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  registrations Registration[]
+  attendance    Attendance[]
+}
+
+model Session {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  description     String?
+  fullDescription String?
+  bannerUrl       String?
+  status          String    @default("DRAFT") // DRAFT, UPCOMING, LIVE, COMPLETED, CANCELLED, ARCHIVED
+  startTime       DateTime
+  endTime         DateTime
+  timezone        String    @default("Asia/Karachi")
+  meetLink        String?
+
+  registrationOpen    Boolean   @default(true)
+  attendanceOpen      Boolean   @default(false)
+  attendanceStartTime DateTime?
+  attendanceEndTime   DateTime?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sheetConnectionId String?
+
+  sheetConnection GoogleSheetConnection? @relation(fields: [sheetConnectionId], references: [id])
+  registrations   Registration[]
+  attendance      Attendance[]
+  speakers        SessionSpeaker[]
+}
+
+model Registration {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionId    String
+  source       String   @default("google-sheets")
+  registeredAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId])
+  @@index([sessionId])
+}
+
+model Attendance {
+  id             String   @id @default(cuid())
+  userId         String
+  sessionId      String
+  markedAt       DateTime @default(now())
+  method         String   @default("portal")
+  overrideReason String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sessionId])
+  @@index([sessionId])
+}
+
+// ---------------------------------------------------------------------------
+// Speaker
+// ---------------------------------------------------------------------------
+
+model Speaker {
+  id           String   @id @default(cuid())
+  name         String
+  title        String?
+  organization String?
+  bio          String?
+  email        String?
+  photoUrl     String?
+  linkedinUrl  String?
+  socialLinks  String?  // JSON string for extensibility
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions SessionSpeaker[]
+}
+
+model SessionSpeaker {
+  sessionId String
+  speakerId String
+  sortOrder Int    @default(0)
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  speaker Speaker @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, speakerId])
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+model Admin {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  role         String    @default("ADMIN") // SUPER_ADMIN, ADMIN
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions  AdminSession[]
+  auditLogs AuditLog[]
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  adminId   String
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String?
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([ipAddress, createdAt])
+}
+
+model RateLimitEvent {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// System
+// ---------------------------------------------------------------------------
+
+model SystemSetting {
+  key   String @id
+  value String
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   String?  // JSON string
+  reason     String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Google Sheets integration
+// ---------------------------------------------------------------------------
+
+model GoogleSheetConnection {
+  id            String    @id @default(cuid())
+  name          String
+  spreadsheetId String
+  sheetName     String
+  isActive      Boolean   @default(true)
+  lastSyncedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions Session[]
+  syncRuns SyncRun[]
+}
+
+model SyncRun {
+  id             String    @id @default(cuid())
+  connectionId   String
+  status         String    @default("success")
+  startedAt      DateTime  @default(now())
+  finishedAt     DateTime?
+  rowsRead       Int       @default(0)
+  createdCount   Int       @default(0)
+  updatedCount   Int       @default(0)
+  duplicateCount Int       @default(0)
+  invalidCount   Int       @default(0)
+  errorMessage   String?
+  details        String?
+
+  connection GoogleSheetConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, startedAt])
+}
