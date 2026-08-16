@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarClock,
   CalendarDays,
   ClipboardCheck,
   Mic,
@@ -88,6 +89,11 @@ export default async function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" variant="cgs">
+            <Link href={`${ADMIN_BASE_PATH}/time-management`}>
+              <CalendarClock className="h-4 w-4" /> Time Management
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
             <Link href={`${ADMIN_BASE_PATH}/sessions`}>
               <Plus className="h-4 w-4" /> New Session
             </Link>

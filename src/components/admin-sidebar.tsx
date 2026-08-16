@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  CalendarClock,
   CalendarDays,
   ClipboardCheck,
   LayoutDashboard,
@@ -32,6 +33,7 @@ const navSections = [
     title: "Attendance operations",
     links: [
       { href: `${ADMIN_BASE_PATH}/sessions`, label: "Sessions", icon: CalendarDays },
+      { href: `${ADMIN_BASE_PATH}/time-management`, label: "Time Management", icon: CalendarClock },
       { href: `${ADMIN_BASE_PATH}/attendance`, label: "Attendance", icon: ClipboardCheck },
       { href: `${ADMIN_BASE_PATH}/registrants`, label: "Registrants", icon: Users },
       { href: `${ADMIN_BASE_PATH}/speakers`, label: "Speakers", icon: Mic },
