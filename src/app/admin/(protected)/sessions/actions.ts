@@ -40,7 +40,14 @@ async function parseSessionInput(formData: FormData) {
   speakerIds: formData.getAll("speakerIds").map(String),
   sheetConnectionId:
     String(formData.get("sheetConnectionId") ?? "") || null,
-},
+  };
+  return {
+    data,
+    registrationOpen,
+    attendanceOpen,
+    speakerIds,
+    sheetConnectionId,
+  };
 
 export async function createSessionAction(
   formData: FormData
