@@ -53,9 +53,12 @@ export function SessionsClient({
   const [deleteTarget, setDeleteTarget] = useState<SessionRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  function statusOf(s: { startTime: Date; endTime: Date }) {
-    if (now >= s.startTime && now <= s.endTime) return "live";
-    if (now < s.startTime) return "upcoming";
+  function statusOf(s: { startTime: Date | string; endTime: Date | string }) {
+    const start = new Date(s.startTime).getTime();
+    const end = new Date(s.endTime).getTime();
+    const current = Date.now();
+    if (current >= start && current <= end) return "live";
+    if (current < start) return "upcoming";
     return "completed";
   }
 

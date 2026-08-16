@@ -13,6 +13,10 @@ import { slugify, localInputToUTC } from "@/lib/datetime";
 export type SessionActionResult = { error?: string } | undefined;
 
 function revalidateAll() {
+  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/sessions");
+  revalidatePath("/attendance");
   revalidatePath(`${ADMIN_BASE_PATH}/sessions`);
   revalidatePath("/admin/sessions");
   revalidatePath(ADMIN_BASE_PATH);

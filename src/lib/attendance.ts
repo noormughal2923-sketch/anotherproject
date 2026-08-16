@@ -29,12 +29,42 @@ export type AttendanceResult =
 export async function getActiveSession() {
   try {
     const now = new Date();
-    return await prisma.session.findFirst({
+    // 1. Exact match within scheduled window
+    let session = await prisma.session.findFirst({
       where: {
         isActive: true,
         attendanceOpen: true,
         startTime: { lte: now },
         endTime: { gte: now },
+      },
+      orderBy: { startTime: "desc" },
+      include: { speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } } },
+    });
+
+    if (session) return session;
+
+    // 2. Generous window (up to 2 hours before start or after end) if attendance is open
+    const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+    const twoHoursFuture = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+    session = await prisma.session.findFirst({
+      where: {
+        isActive: true,
+        attendanceOpen: true,
+        startTime: { lte: twoHoursFuture },
+        endTime: { gte: twoHoursAgo },
+      },
+      orderBy: { startTime: "desc" },
+      include: { speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } } },
+    });
+
+    if (session) return session;
+
+    // 3. Fallback: Any active session with attendance verification explicitly turned on
+    return await prisma.session.findFirst({
+      where: {
+        isActive: true,
+        attendanceOpen: true,
       },
       orderBy: { startTime: "desc" },
       include: { speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } } },
@@ -77,16 +107,7 @@ export async function markAttendance(
     return { status: "error", code: "invalid-input" };
   }
 
-  const now = new Date();
-  const session = await prisma.session.findFirst({
-    where: {
-      isActive: true,
-      attendanceOpen: true,
-      startTime: { lte: now },
-      endTime: { gte: now },
-    },
-    orderBy: { startTime: "desc" },
-  });
+  const session = await getActiveSession();
   if (!session) {
     return { status: "error", code: "no-active-session" };
   }
@@ -130,6 +151,6 @@ export async function markAttendance(
     status: "success",
     name: user.name ?? parsed.data.name ?? normalized,
     sessionTitle: session.title,
-    markedAt: now,
+    markedAt: new Date(),
   };
 }
