@@ -1,12 +1,14 @@
 export function formatDateTime(
-  date: Date | string,
-  timezone: string,
+  date: Date | string | number | null | undefined,
+  timezone?: string,
   opts: Intl.DateTimeFormatOptions = {}
 ): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  if (!date) return "—";
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return "—";
   try {
     return new Intl.DateTimeFormat("en-US", {
-      timeZone: timezone,
+      ...(timezone ? { timeZone: timezone } : {}),
       dateStyle: "medium",
       timeStyle: "short",
       ...opts,
@@ -20,14 +22,16 @@ export function formatDateTime(
 }
 
 export function formatDate(
-  date: Date | string,
-  timezone: string,
+  date: Date | string | number | null | undefined,
+  timezone?: string,
   opts: Intl.DateTimeFormatOptions = {}
 ): string {
-  const d = typeof date === "string" ? new Date(date) : date;
+  if (!date) return "—";
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return "—";
   try {
     return new Intl.DateTimeFormat("en-US", {
-      timeZone: timezone,
+      ...(timezone ? { timeZone: timezone } : {}),
       dateStyle: "medium",
       ...opts,
     }).format(d);
@@ -36,11 +40,14 @@ export function formatDate(
   }
 }
 
-export function toLocalInputValue(date: Date): string {
+export function toLocalInputValue(date: Date | string | number | null | undefined): string {
+  if (!date) return "";
+  const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
+  if (!d || Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-    date.getHours()
-  )}:${pad(date.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
 }
 
 /**

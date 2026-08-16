@@ -58,8 +58,7 @@ export const sessionSchema = z.object({
     .union([z.string().trim().max(500), z.literal("")])
     .optional()
     .transform((v) => (v ? v : undefined)),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
+  
 });
 
 export const speakerSchema = z.object({

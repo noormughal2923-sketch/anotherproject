@@ -32,8 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { slugify, toLocalInputValue, utcToLocalInput } from "@/lib/datetime";
-import { DEFAULT_TIMEZONE } from "@/lib/constants";
+import { slugify, toLocalInputValue } from "@/lib/datetime";
 import {
   createSessionAction,
   updateSessionAction,
@@ -44,8 +43,6 @@ const formSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(200),
   description: z.string().trim().max(5000).optional(),
   meetLink: z.string().trim().max(500).optional(),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
   registrationOpen: z.boolean(),
   attendanceOpen: z.boolean(),
   sheetConnectionId: z.string().optional(),
@@ -68,8 +65,8 @@ export function SessionForm({
     slug?: string;
     description: string | null;
     meetLink: string | null;
-    startTime: Date;
-    endTime: Date;
+    startTime: Date | string;
+    endTime: Date | string;
     registrationOpen: boolean;
     attendanceOpen: boolean;
     speakerIds: string[];
@@ -92,8 +89,6 @@ export function SessionForm({
       title: session?.title ?? "",
       description: session?.description ?? "",
       meetLink: session?.meetLink ?? "",
-      startTime: session ? utcToLocalInput(session.startTime, DEFAULT_TIMEZONE) : "",
-      endTime: session ? utcToLocalInput(session.endTime, DEFAULT_TIMEZONE) : "",
       registrationOpen: session?.registrationOpen ?? true,
       attendanceOpen: session?.attendanceOpen ?? true,
       sheetConnectionId: session?.sheetConnectionId ?? "",
@@ -103,12 +98,11 @@ export function SessionForm({
   async function onSubmit(values: FormValues) {
     setError(null);
     setSubmitting(true);
+
     const fd = new FormData();
     fd.set("title", values.title);
     fd.set("description", values.description ?? "");
     fd.set("meetLink", values.meetLink ?? "");
-    fd.set("startTime", values.startTime);
-    fd.set("endTime", values.endTime);
     fd.set("registrationOpen", values.registrationOpen ? "on" : "off");
     fd.set("attendanceOpen", values.attendanceOpen ? "on" : "off");
     for (const id of speakerIds) {
@@ -168,34 +162,6 @@ export function SessionForm({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="startTime"
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold">Start Date & Time</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" className="h-10 text-xs font-mono" {...field} />
-                </FormControl>
-                <FormDescription className="text-[11px]">Your local timezone</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="endTime"
-            render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs font-semibold">End Date & Time</FormLabel>
-                <FormControl>
-                  <Input type="datetime-local" className="h-10 text-xs font-mono" {...field} />
-                </FormControl>
-                <FormDescription className="text-[11px]">Your local timezone</FormDescription>
                 <FormMessage />
               </FormItem>
             )}

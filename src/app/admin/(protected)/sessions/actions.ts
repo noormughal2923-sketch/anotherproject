@@ -6,9 +6,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { sessionSchema } from "@/lib/validation";
-import { ADMIN_BASE_PATH, DEFAULT_TIMEZONE } from "@/lib/constants";
+import { ADMIN_BASE_PATH } from "@/lib/constants";
 
-import { slugify, localInputToUTC } from "@/lib/datetime";
+import { slugify } from "@/lib/datetime";
 
 export type SessionActionResult = { error?: string } | undefined;
 
@@ -29,35 +29,18 @@ async function parseSessionInput(formData: FormData) {
     slug: String(formData.get("slug") ?? "") || undefined,
     description: String(formData.get("description") ?? "") || undefined,
     meetLink: String(formData.get("meetLink") ?? "") || undefined,
-    startTime: String(formData.get("startTime") ?? ""),
-    endTime: String(formData.get("endTime") ?? ""),
   });
   if (!parsed.success) {
     return { error: "Please fix the invalid fields and try again." };
   }
 
-  const startTime = localInputToUTC(parsed.data.startTime, DEFAULT_TIMEZONE);
-  const endTime = localInputToUTC(parsed.data.endTime, DEFAULT_TIMEZONE);
-  if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
-    return { error: "Please enter valid start and end times." };
-  }
-  if (endTime <= startTime) {
-    return { error: "End time must be after start time." };
-  }
-
-  return {
-    data: {
-      ...parsed.data,
-      startTime,
-      endTime,
-      registrationOpen: formData.get("registrationOpen") === "on",
-      attendanceOpen: formData.get("attendanceOpen") === "on",
-      speakerIds: formData.getAll("speakerIds").map(String),
-      sheetConnectionId:
-        String(formData.get("sheetConnectionId") ?? "") || null,
-    },
-  };
-}
+  const { data } = parsed;
+  registrationOpen: formData.get("registrationOpen") === "on",
+  attendanceOpen: formData.get("attendanceOpen") === "on",
+  speakerIds: formData.getAll("speakerIds").map(String),
+  sheetConnectionId:
+    String(formData.get("sheetConnectionId") ?? "") || null,
+},
 
 export async function createSessionAction(
   formData: FormData
@@ -88,8 +71,6 @@ export async function createSessionAction(
         slug,
         description: data.description,
         meetLink: data.meetLink,
-        startTime: data.startTime,
-        endTime: data.endTime,
         registrationOpen: data.registrationOpen,
         attendanceOpen: data.attendanceOpen,
         sheetConnectionId: data.sheetConnectionId,
@@ -136,8 +117,6 @@ export async function updateSessionAction(
         slug,
         description: data.description,
         meetLink: data.meetLink,
-        startTime: data.startTime,
-        endTime: data.endTime,
         registrationOpen: data.registrationOpen,
         attendanceOpen: data.attendanceOpen,
         sheetConnectionId: data.sheetConnectionId,
