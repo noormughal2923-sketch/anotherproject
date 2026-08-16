@@ -32,7 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { slugify, toLocalInputValue } from "@/lib/datetime";
+import { slugify, toLocalInputValue, utcToLocalInput } from "@/lib/datetime";
+import { DEFAULT_TIMEZONE } from "@/lib/constants";
 import {
   createSessionAction,
   updateSessionAction,
@@ -91,8 +92,8 @@ export function SessionForm({
       title: session?.title ?? "",
       description: session?.description ?? "",
       meetLink: session?.meetLink ?? "",
-      startTime: session ? toLocalInputValue(session.startTime) : "",
-      endTime: session ? toLocalInputValue(session.endTime) : "",
+      startTime: session ? utcToLocalInput(session.startTime, DEFAULT_TIMEZONE) : "",
+      endTime: session ? utcToLocalInput(session.endTime, DEFAULT_TIMEZONE) : "",
       registrationOpen: session?.registrationOpen ?? true,
       attendanceOpen: session?.attendanceOpen ?? true,
       sheetConnectionId: session?.sheetConnectionId ?? "",

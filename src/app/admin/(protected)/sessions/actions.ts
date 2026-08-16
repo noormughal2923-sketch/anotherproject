@@ -6,9 +6,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth";
 import { sessionSchema } from "@/lib/validation";
-import { ADMIN_BASE_PATH } from "@/lib/constants";
+import { ADMIN_BASE_PATH, DEFAULT_TIMEZONE } from "@/lib/constants";
 
-import { slugify } from "@/lib/datetime";
+import { slugify, localInputToUTC } from "@/lib/datetime";
 
 export type SessionActionResult = { error?: string } | undefined;
 
@@ -32,8 +32,8 @@ async function parseSessionInput(formData: FormData) {
     return { error: "Please fix the invalid fields and try again." };
   }
 
-  const startTime = new Date(parsed.data.startTime);
-  const endTime = new Date(parsed.data.endTime);
+  const startTime = localInputToUTC(parsed.data.startTime, DEFAULT_TIMEZONE);
+  const endTime = localInputToUTC(parsed.data.endTime, DEFAULT_TIMEZONE);
   if (Number.isNaN(startTime.getTime()) || Number.isNaN(endTime.getTime())) {
     return { error: "Please enter valid start and end times." };
   }
