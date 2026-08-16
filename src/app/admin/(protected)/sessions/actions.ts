@@ -35,19 +35,22 @@ async function parseSessionInput(formData: FormData) {
   }
 
   const { data } = parsed;
-  registrationOpen: formData.get("registrationOpen") === "on",
-  attendanceOpen: formData.get("attendanceOpen") === "on",
-  speakerIds: formData.getAll("speakerIds").map(String),
-  sheetConnectionId:
-    String(formData.get("sheetConnectionId") ?? "") || null,
-  };
+  const registrationOpen = formData.get("registrationOpen") === "on";
+  const attendanceOpen = formData.get("attendanceOpen") === "on";
+  const speakerIds = formData.getAll("speakerIds").map(String);
+  const sheetConnectionId =
+    String(formData.get("sheetConnectionId") ?? "") || null;
+
   return {
-    data,
-    registrationOpen,
-    attendanceOpen,
+    data: {
+      ...data,
+      registrationOpen,
+      attendanceOpen,
+      sheetConnectionId,
+    },
     speakerIds,
-    sheetConnectionId,
   };
+}
 
 export async function createSessionAction(
   formData: FormData
@@ -57,7 +60,7 @@ export async function createSessionAction(
   if ("error" in parsed) {
     return { error: parsed.error };
   }
-  const { data } = parsed;
+  const { data, speakerIds } = parsed;
 
   let baseSlug = data.slug || slugify(data.title);
   if (!baseSlug) {
@@ -73,16 +76,18 @@ export async function createSessionAction(
 
   try {
     await prisma.session.create({
-      data: {
+       data: {
         title: data.title,
         slug,
         description: data.description,
         meetLink: data.meetLink,
+        startTime: new Date(),
+        endTime: new Date(Date.now() + 60 * 60 * 1000),
         registrationOpen: data.registrationOpen,
         attendanceOpen: data.attendanceOpen,
         sheetConnectionId: data.sheetConnectionId,
         speakers: {
-          create: data.speakerIds.map((speakerId, i) => ({
+          create: speakerIds.map((speakerId, i) => ({
             speakerId,
             sortOrder: i,
           })),
@@ -107,7 +112,7 @@ export async function updateSessionAction(
   if ("error" in parsed) {
     return { error: parsed.error };
   }
-  const { data } = parsed;
+  const { data, speakerIds } = parsed;
 
   const existing = await prisma.session.findUnique({ where: { id } });
   if (!existing) {
@@ -129,7 +134,7 @@ export async function updateSessionAction(
         sheetConnectionId: data.sheetConnectionId,
         speakers: {
           deleteMany: {},
-          create: data.speakerIds.map((speakerId, i) => ({
+          create: speakerIds.map((speakerId, i) => ({
             speakerId,
             sortOrder: i,
           })),
