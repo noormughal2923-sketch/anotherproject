@@ -14,18 +14,26 @@ export const dynamic = "force-dynamic";
 
 export default async function AttendancePage() {
   const settings = await getSettings();
-  const [activeSession, upcoming] = await Promise.all([
-    getActiveSession(),
-    prisma.session.findMany({
-      where: {
-        isActive: true,
-        startTime: { gt: new Date() },
-        registrationOpen: true,
-      },
-      orderBy: { startTime: "asc" },
-      take: 3,
-    }),
-  ]);
+  let activeSession = null;
+  let upcoming: Array<any> = [];
+  try {
+    const [resActive, resUpcoming] = await Promise.all([
+      getActiveSession(),
+      prisma.session.findMany({
+        where: {
+          isActive: true,
+          startTime: { gt: new Date() },
+          registrationOpen: true,
+        },
+        orderBy: { startTime: "asc" },
+        take: 3,
+      }),
+    ]);
+    activeSession = resActive;
+    upcoming = resUpcoming;
+  } catch (err) {
+    console.error("Error loading attendance page sessions:", err);
+  }
 
   return (
     <div className="mx-auto max-w-xl px-4 py-16 sm:px-6 lg:px-8 animate-fade-in">

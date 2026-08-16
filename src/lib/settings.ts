@@ -14,20 +14,33 @@ export type Settings = {
 };
 
 export async function getSettings(): Promise<Settings> {
-  const rows = await prisma.systemSetting.findMany();
-  const map = new Map(rows.map((r) => [r.key, r.value]));
+  try {
+    const rows = await prisma.systemSetting.findMany();
+    const map = new Map(rows.map((r) => [r.key, r.value]));
 
-  return {
-    portalOpen: map.get(SETTING_KEYS.PORTAL_OPEN) !== "false",
-    registrationOpen: map.get(SETTING_KEYS.REGISTRATION_OPEN) !== "false",
-    attendanceOpen: map.get(SETTING_KEYS.ATTENDANCE_OPEN) !== "false",
-    maintenanceMode: map.get(SETTING_KEYS.MAINTENANCE_MODE) === "true",
-    orgName: map.get(SETTING_KEYS.ORG_NAME) ?? "CyberGuardiansSociety",
-    timezone: map.get(SETTING_KEYS.DEFAULT_TIMEZONE) ?? DEFAULT_TIMEZONE,
-    supportEmail:
-      map.get(SETTING_KEYS.SUPPORT_EMAIL) ??
-      "contact@cyberguardianssociety.org",
-  };
+    return {
+      portalOpen: map.get(SETTING_KEYS.PORTAL_OPEN) !== "false",
+      registrationOpen: map.get(SETTING_KEYS.REGISTRATION_OPEN) !== "false",
+      attendanceOpen: map.get(SETTING_KEYS.ATTENDANCE_OPEN) !== "false",
+      maintenanceMode: map.get(SETTING_KEYS.MAINTENANCE_MODE) === "true",
+      orgName: map.get(SETTING_KEYS.ORG_NAME) ?? "CyberGuardiansSociety",
+      timezone: map.get(SETTING_KEYS.DEFAULT_TIMEZONE) ?? DEFAULT_TIMEZONE,
+      supportEmail:
+        map.get(SETTING_KEYS.SUPPORT_EMAIL) ??
+        "contact@cyberguardianssociety.org",
+    };
+  } catch (err) {
+    console.error("Error loading system settings:", err);
+    return {
+      portalOpen: true,
+      registrationOpen: true,
+      attendanceOpen: true,
+      maintenanceMode: false,
+      orgName: "CyberGuardiansSociety",
+      timezone: DEFAULT_TIMEZONE,
+      supportEmail: "contact@cyberguardianssociety.org",
+    };
+  }
 }
 
 export async function setSetting(key: string, value: string) {

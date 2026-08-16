@@ -14,26 +14,36 @@ export const dynamic = "force-dynamic";
 export default async function SessionsPage() {
   const settings = await getSettings();
   const now = new Date();
-  const [active, upcoming, past] = await Promise.all([
-    getActiveSession(),
-    prisma.session.findMany({
-      where: { isActive: true, startTime: { gt: now } },
-      orderBy: { startTime: "asc" },
-      include: {
-        speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } },
-        _count: { select: { registrations: true } },
-      },
-    }),
-    prisma.session.findMany({
-      where: { isActive: true, endTime: { lt: now } },
-      orderBy: { startTime: "desc" },
-      take: 20,
-      include: {
-        speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } },
-        _count: { select: { registrations: true } },
-      },
-    }),
-  ]);
+  let active = null;
+  let upcoming: Array<any> = [];
+  let past: Array<any> = [];
+  try {
+    const [resActive, resUpcoming, resPast] = await Promise.all([
+      getActiveSession(),
+      prisma.session.findMany({
+        where: { isActive: true, startTime: { gt: now } },
+        orderBy: { startTime: "asc" },
+        include: {
+          speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } },
+          _count: { select: { registrations: true } },
+        },
+      }),
+      prisma.session.findMany({
+        where: { isActive: true, endTime: { lt: now } },
+        orderBy: { startTime: "desc" },
+        take: 20,
+        include: {
+          speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } },
+          _count: { select: { registrations: true } },
+        },
+      }),
+    ]);
+    active = resActive;
+    upcoming = resUpcoming;
+    past = resPast;
+  } catch (err) {
+    console.error("Error loading sessions page data:", err);
+  }
 
   const liveSessions = [
     ...(active ? [{ ...active, isLiveNow: true }] : []),
@@ -107,7 +117,7 @@ export default async function SessionsPage() {
                     <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2">
                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-foreground font-medium truncate">
-                        {s.speakers.map((sp) => sp.speaker.name).join(", ")}
+                        {s.speakers.map((sp: any) => sp.speaker.name).join(", ")}
                       </span>
                     </div>
                   )}

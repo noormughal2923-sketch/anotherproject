@@ -47,21 +47,29 @@ export default async function HomePage() {
     );
   }
 
-  const [activeSession, upcoming] = await Promise.all([
-    getActiveSession(),
-    prisma.session.findMany({
-      where: {
-        isActive: true,
-        startTime: { gt: new Date() },
-        registrationOpen: true,
-      },
-      orderBy: { startTime: "asc" },
-      take: 4,
-      include: {
-        speakers: { include: { speaker: true } },
-      },
-    }),
-  ]);
+  let activeSession = null;
+  let upcoming: Array<any> = [];
+  try {
+    const [resActive, resUpcoming] = await Promise.all([
+      getActiveSession(),
+      prisma.session.findMany({
+        where: {
+          isActive: true,
+          startTime: { gt: new Date() },
+          registrationOpen: true,
+        },
+        orderBy: { startTime: "asc" },
+        take: 4,
+        include: {
+          speakers: { include: { speaker: true } },
+        },
+      }),
+    ]);
+    activeSession = resActive;
+    upcoming = resUpcoming;
+  } catch (err) {
+    console.error("Error loading home page sessions:", err);
+  }
 
   const stats = [
     { icon: Globe2, label: "Live Google Meet", sub: "interactive sessions" },
@@ -394,7 +402,7 @@ export default async function HomePage() {
                     <div className="mt-4 flex items-center gap-2 border-t border-border/60 pt-3">
                       <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Speakers:</span>
                       <span className="min-w-0 truncate text-xs font-medium text-foreground">
-                        {s.speakers.map((sp) => sp.speaker.name).join(", ")}
+                        {s.speakers.map((sp: any) => sp.speaker.name).join(", ")}
                       </span>
                     </div>
                   )}

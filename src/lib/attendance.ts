@@ -27,17 +27,22 @@ export type AttendanceResult =
     };
 
 export async function getActiveSession() {
-  const now = new Date();
-  return prisma.session.findFirst({
-    where: {
-      isActive: true,
-      attendanceOpen: true,
-      startTime: { lte: now },
-      endTime: { gte: now },
-    },
-    orderBy: { startTime: "desc" },
-    include: { speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } } },
-  });
+  try {
+    const now = new Date();
+    return await prisma.session.findFirst({
+      where: {
+        isActive: true,
+        attendanceOpen: true,
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+      orderBy: { startTime: "desc" },
+      include: { speakers: { include: { speaker: true }, orderBy: { sortOrder: "asc" } } },
+    });
+  } catch (err) {
+    console.error("Error fetching active session:", err);
+    return null;
+  }
 }
 
 export async function markAttendance(
