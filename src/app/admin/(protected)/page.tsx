@@ -11,6 +11,8 @@ import {
   Radio,
   BarChart3,
   Percent,
+  Shield,
+  Award,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -89,13 +91,18 @@ export default async function AdminDashboardPage() {
         {/* Quick Actions */}
         <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" variant="cgs">
-            <Link href={`${ADMIN_BASE_PATH}/time-management`}>
-              <CalendarClock className="h-4 w-4" /> Time Management
+            <Link href={`${ADMIN_BASE_PATH}/bootcamp`}>
+              <Shield className="h-4 w-4" /> Bootcamp Control
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link href={`${ADMIN_BASE_PATH}/sessions`}>
-              <Plus className="h-4 w-4" /> New Session
+            <Link href={`${ADMIN_BASE_PATH}/certificates`}>
+              <Award className="h-4 w-4" /> Certificates
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <Link href={`${ADMIN_BASE_PATH}/time-management`}>
+              <CalendarClock className="h-4 w-4" /> Timing
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline">

@@ -8,7 +8,9 @@ function hoursFromNow(h: number) {
 }
 
 async function main() {
-  // ── Admin ────────────────────────────────────────────────────────────
+  console.log("🌱 Starting CGS Bootcamp Database Seeding...");
+
+  // ── 1. Admin Account ──────────────────────────────────────────────────
   const adminEmail = (
     process.env.SEED_ADMIN_EMAIL || "admin@cgs.local"
   ).toLowerCase();
@@ -30,276 +32,525 @@ async function main() {
       role: "SUPER_ADMIN",
     },
   });
-  console.log(`Admin ready: ${adminEmail} (password: ${adminPassword})`);
+  console.log(`✅ Admin ready: ${adminEmail} (password: ${adminPassword})`);
 
-  // ── Speakers ─────────────────────────────────────────────────────────
-  const speakerA = await prisma.speaker.upsert({
-    where: { id: "seed-speaker-a" },
-    update: {},
-    create: {
-      id: "seed-speaker-a",
-      name: "Aarav Sharma",
-      title: "Security Researcher",
-      organization: "CyberGuardiansSociety",
-      bio: "Focuses on web application security, OWASP Top 10, and responsible disclosure practices.",
-      email: "aarav@example.com",
-      linkedinUrl: "https://linkedin.com/in/aarav-example",
+  // ── 2. Speakers ───────────────────────────────────────────────────────
+  const speaker1 = await prisma.speaker.upsert({
+    where: { id: "cgs-speaker-lead" },
+    update: {
+      name: "CyberGuardiansSociety Lead",
+      title: "Lead Cybersecurity Instructor",
+      organization: "CyberGuardiansSociety (CGS)",
+      bio: "Specializing in offensive security, threat intelligence, and defensive posture engineering.",
     },
-  });
-  const speakerB = await prisma.speaker.upsert({
-    where: { id: "seed-speaker-b" },
-    update: {},
     create: {
-      id: "seed-speaker-b",
-      name: "Priya Nair",
-      title: "Threat Intelligence Analyst",
-      organization: "SecureNet Labs",
-      bio: "Specializes in OSINT, phishing defense, and social engineering awareness training.",
-      email: "priya@example.com",
-      linkedinUrl: "https://linkedin.com/in/priya-example",
-    },
-  });
-  const speakerC = await prisma.speaker.upsert({
-    where: { id: "seed-speaker-c" },
-    update: {},
-    create: {
-      id: "seed-speaker-c",
-      name: "Rohan Iyer",
-      title: "Cloud Security Engineer",
-      organization: "CloudDefend Inc.",
-      bio: "Works on cloud hardening, identity management, and zero-trust architecture.",
+      id: "cgs-speaker-lead",
+      name: "CyberGuardiansSociety Lead",
+      title: "Lead Cybersecurity Instructor",
+      organization: "CyberGuardiansSociety (CGS)",
+      bio: "Specializing in offensive security, threat intelligence, and defensive posture engineering.",
+      email: "lead@cyberguardianssociety.org",
+      linkedinUrl: "https://linkedin.com/company/cyberguardianssociety",
     },
   });
 
-  // ── Google Sheet Connections (Official CGS Spreadsheets) ──────────────
+  const speaker2 = await prisma.speaker.upsert({
+    where: { id: "cgs-speaker-secops" },
+    update: {
+      name: "CGS Security Researcher",
+      title: "Security Analyst & OSINT Specialist",
+      organization: "CyberGuardiansSociety (CGS)",
+      bio: "Expert in social engineering awareness, OSINT analysis, and attack chain modeling.",
+    },
+    create: {
+      id: "cgs-speaker-secops",
+      name: "CGS Security Researcher",
+      title: "Security Analyst & OSINT Specialist",
+      organization: "CyberGuardiansSociety (CGS)",
+      bio: "Expert in social engineering awareness, OSINT analysis, and attack chain modeling.",
+      email: "research@cyberguardianssociety.org",
+    },
+  });
+
+  // ── 3. Google Sheet Connections ───────────────────────────────────────
   const registrationConn = await prisma.googleSheetConnection.upsert({
-    where: { id: "cgs-session-1-registration" },
+    where: { id: "cgs-bootcamp-google-form-registration" },
     update: {
+      name: "CGS Bootcamp Official Google Form Registration",
       spreadsheetId: "1wAwfbveDLJVb-K-Qv-dd_V3PK3OUiuBscVdIf8P_DMM",
       sheetName: "Form Responses 1",
+      isActive: true,
     },
     create: {
-      id: "cgs-session-1-registration",
-      name: "CGS Session #1 Registration Form",
+      id: "cgs-bootcamp-google-form-registration",
+      name: "CGS Bootcamp Official Google Form Registration",
       spreadsheetId: "1wAwfbveDLJVb-K-Qv-dd_V3PK3OUiuBscVdIf8P_DMM",
       sheetName: "Form Responses 1",
       isActive: true,
     },
   });
 
-  await prisma.googleSheetConnection.upsert({
-    where: { id: "cgs-session-1-feedback" },
+  // ── 4. The 3 Official Bootcamp Sessions ──────────────────────────────
+  // Session 1: Understanding Cyber Attacks
+  const session1 = await prisma.session.upsert({
+    where: { slug: "understanding-cyber-attacks" },
     update: {
-      spreadsheetId: "1IuvGQkY5sOUyoXulDr9w3bUPUY56Pi-_NFWwe6Tw_aM",
-      sheetName: "Form Responses 1",
-    },
-    create: {
-      id: "cgs-session-1-feedback",
-      name: "CGS Session #1 Feedback Form",
-      spreadsheetId: "1IuvGQkY5sOUyoXulDr9w3bUPUY56Pi-_NFWwe6Tw_aM",
-      sheetName: "Form Responses 1",
-      isActive: true,
-    },
-  });
-
-  // ── Sessions ─────────────────────────────────────────────────────────
-  const active = await prisma.session.upsert({
-    where: { slug: "intro-to-cybersecurity" },
-    update: {
-      sheetConnectionId: registrationConn.id,
-    },
-    create: {
-      slug: "intro-to-cybersecurity",
-      title: "CGS Session #1: Introduction to Cybersecurity",
+      sessionNumber: 1,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 1: Understanding Cyber Attacks",
       description:
-        "A beginner-friendly overview of how attackers think, common threats, and the basics of staying safe online.",
-      fullDescription:
-        "This session covers the cybersecurity landscape for beginners. Topics include threat modeling, common attack vectors (phishing, malware, social engineering), password hygiene, and an introduction to defensive tools. Perfect for students and professionals starting their security journey.",
+        "What is a cyber attack? Why cyber attacks happen, major attack types, lifecycle, and defensive foundations.",
+      fullDescription: `CURRICULUM TOPICS:
+• What is a cyber attack?
+• Why cyber attacks happen
+• Major categories/types of cyber attacks
+• How different attacks work at a level
+• Attack lifecycle (Kill Chain overview)
+• Common weaknesses attackers exploit
+• Real-world breach case studies
+• Basic defensive measures & hygiene`,
       status: "LIVE",
       startTime: hoursFromNow(-1),
       endTime: hoursFromNow(2),
-      meetLink: "https://meet.google.com/example-active",
-      registrationOpen: true,
       attendanceOpen: true,
+      registrationOpen: true,
+      meetLink: "https://meet.google.com/cgs-bootcamp-s1",
       sheetConnectionId: registrationConn.id,
-      speakers: {
-        create: [
-          { speakerId: speakerA.id, sortOrder: 0 },
-          { speakerId: speakerB.id, sortOrder: 1 },
-        ],
-      },
+      isActive: true,
     },
-  });
-
-  const upcoming = await prisma.session.upsert({
-    where: { slug: "phishing-defense" },
-    update: {},
     create: {
-      slug: "phishing-defense",
-      title: "CGS Session #2: Phishing Defense for Teams",
+      slug: "understanding-cyber-attacks",
+      sessionNumber: 1,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 1: Understanding Cyber Attacks",
       description:
-        "How to spot phishing emails, report them, and keep your organization safe from social engineering attacks.",
-      fullDescription:
-        "An interactive session on identifying and mitigating phishing threats. We will walk through real-world phishing examples, discuss email authentication (SPF, DKIM, DMARC), and share best practices for building a phishing-resilient culture in your organization.",
-      status: "UPCOMING",
-      startTime: hoursFromNow(72),
-      endTime: hoursFromNow(74),
-      meetLink: "https://meet.google.com/example-upcoming",
+        "What is a cyber attack? Why cyber attacks happen, major attack types, lifecycle, and defensive foundations.",
+      fullDescription: `CURRICULUM TOPICS:
+• What is a cyber attack?
+• Why cyber attacks happen
+• Major categories/types of cyber attacks
+• How different attacks work at a level
+• Attack lifecycle (Kill Chain overview)
+• Common weaknesses attackers exploit
+• Real-world breach case studies
+• Basic defensive measures & hygiene`,
+      status: "LIVE",
+      startTime: hoursFromNow(-1),
+      endTime: hoursFromNow(2),
+      attendanceOpen: true,
       registrationOpen: true,
-      attendanceOpen: false,
-      speakers: { create: [{ speakerId: speakerB.id, sortOrder: 0 }] },
+      meetLink: "https://meet.google.com/cgs-bootcamp-s1",
+      sheetConnectionId: registrationConn.id,
+      isActive: true,
+      speakers: {
+        create: [{ speakerId: speaker1.id, sortOrder: 0 }],
+      },
     },
   });
 
-  const upcoming2 = await prisma.session.upsert({
-    where: { slug: "web-security-unlocked" },
-    update: {},
-    create: {
-      slug: "web-security-unlocked",
-      title: "CGS Session #3: Web Security Unlocked",
+  // Session 2: Phishing & Social Engineering
+  const session2 = await prisma.session.upsert({
+    where: { slug: "phishing-and-social-engineering" },
+    update: {
+      sessionNumber: 2,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 2: Phishing & Social Engineering",
       description:
-        "Deep dive into XSS, CSRF, SQL injection, and modern browser security features.",
+        "What is phishing? Email phishing, spear phishing, smishing, vishing, quishing, psychological manipulation, and detection.",
+      fullDescription: `CURRICULUM TOPICS:
+• What is phishing?
+• How phishing works & psychological triggers
+• Email phishing, Spear phishing, Whaling
+• Smishing (SMS) & Vishing (Voice)
+• Clone phishing & QR code phishing (Quishing)
+• Psychological manipulation patterns (Urgency, Authority, Fear)
+• Practical identification: headers, domains, indicators
+• Ethical, controlled phishing demonstrations for educational awareness`,
       status: "UPCOMING",
-      startTime: hoursFromNow(168),
-      endTime: hoursFromNow(170),
+      startTime: hoursFromNow(24),
+      endTime: hoursFromNow(26),
+      attendanceOpen: false,
       registrationOpen: true,
+      meetLink: "https://meet.google.com/cgs-bootcamp-s2",
+      sheetConnectionId: registrationConn.id,
+      isActive: true,
+    },
+    create: {
+      slug: "phishing-and-social-engineering",
+      sessionNumber: 2,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 2: Phishing & Social Engineering",
+      description:
+        "What is phishing? Email phishing, spear phishing, smishing, vishing, quishing, psychological manipulation, and detection.",
+      fullDescription: `CURRICULUM TOPICS:
+• What is phishing?
+• How phishing works & psychological triggers
+• Email phishing, Spear phishing, Whaling
+• Smishing (SMS) & Vishing (Voice)
+• Clone phishing & QR code phishing (Quishing)
+• Psychological manipulation patterns (Urgency, Authority, Fear)
+• Practical identification: headers, domains, indicators
+• Ethical, controlled phishing demonstrations for educational awareness`,
+      status: "UPCOMING",
+      startTime: hoursFromNow(24),
+      endTime: hoursFromNow(26),
       attendanceOpen: false,
+      registrationOpen: true,
+      meetLink: "https://meet.google.com/cgs-bootcamp-s2",
+      sheetConnectionId: registrationConn.id,
+      isActive: true,
       speakers: {
         create: [
-          { speakerId: speakerA.id, sortOrder: 0 },
-          { speakerId: speakerC.id, sortOrder: 1 },
+          { speakerId: speaker1.id, sortOrder: 0 },
+          { speakerId: speaker2.id, sortOrder: 1 },
         ],
       },
     },
   });
 
-  const past = await prisma.session.upsert({
-    where: { slug: "password-security-101" },
-    update: {},
-    create: {
-      slug: "password-security-101",
-      title: "Password Security 101",
+  // Session 3: How Hackers Think: From Reconnaissance to Attack Chain
+  const session3 = await prisma.session.upsert({
+    where: { slug: "how-hackers-think" },
+    update: {
+      sessionNumber: 3,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 3: How Hackers Think: From Reconnaissance to Attack Chain",
       description:
-        "Why passwords fail, what passphrases are, and how password managers help protect your digital life.",
-      status: "COMPLETED",
-      startTime: hoursFromNow(-96),
-      endTime: hoursFromNow(-94),
-      registrationOpen: false,
+        "Reconnaissance, passive vs active OSINT, attack surface, initial access, exploitation, privilege escalation, and attack chains.",
+      fullDescription: `CURRICULUM TOPICS:
+• Reconnaissance fundamentals
+• Passive vs active reconnaissance
+• OSINT (Open Source Intelligence) techniques
+• Attack surface mapping
+• Initial access vectors
+• Exploitation fundamentals & web/network vectors
+• Privilege escalation at a conceptual level
+• Persistence at a conceptual level
+• Impact assessment (Data exfiltration, disruption)
+• Connecting the dots: How individual pieces form an attack chain
+• Defensive thinking & building proactive controls`,
+      status: "UPCOMING",
+      startTime: hoursFromNow(48),
+      endTime: hoursFromNow(50),
       attendanceOpen: false,
+      registrationOpen: true,
+      meetLink: "https://meet.google.com/cgs-bootcamp-s3",
+      sheetConnectionId: registrationConn.id,
+      isActive: true,
+    },
+    create: {
+      slug: "how-hackers-think",
+      sessionNumber: 3,
+      bootcampTag: "cgs-bootcamp-2026",
+      title: "Session 3: How Hackers Think: From Reconnaissance to Attack Chain",
+      description:
+        "Reconnaissance, passive vs active OSINT, attack surface, initial access, exploitation, privilege escalation, and attack chains.",
+      fullDescription: `CURRICULUM TOPICS:
+• Reconnaissance fundamentals
+• Passive vs active reconnaissance
+• OSINT (Open Source Intelligence) techniques
+• Attack surface mapping
+• Initial access vectors
+• Exploitation fundamentals & web/network vectors
+• Privilege escalation at a conceptual level
+• Persistence at a conceptual level
+• Impact assessment (Data exfiltration, disruption)
+• Connecting the dots: How individual pieces form an attack chain
+• Defensive thinking & building proactive controls`,
+      status: "UPCOMING",
+      startTime: hoursFromNow(48),
+      endTime: hoursFromNow(50),
+      attendanceOpen: false,
+      registrationOpen: true,
+      meetLink: "https://meet.google.com/cgs-bootcamp-s3",
+      sheetConnectionId: registrationConn.id,
+      isActive: true,
       speakers: {
         create: [
-          { speakerId: speakerA.id, sortOrder: 0 },
-          { speakerId: speakerC.id, sortOrder: 1 },
+          { speakerId: speaker1.id, sortOrder: 0 },
+          { speakerId: speaker2.id, sortOrder: 1 },
         ],
       },
     },
   });
 
-  const draft = await prisma.session.upsert({
-    where: { slug: "network-forensics-basics" },
-    update: {},
+  console.log("✅ Bootcamp Sessions 1, 2, and 3 seeded successfully.");
+
+  // ── 5. Test Participants Scenario Suite ──────────────────────────────
+  // Participant A: Registered + S1 + S2 + S3 -> ELIGIBLE
+  const userA = await prisma.user.upsert({
+    where: { email: "ali@example.com" },
+    update: {
+      name: "Ali Khan",
+      whatsapp: "+923001234567",
+      organization: "FAST NUCES",
+      countryCity: "Islamabad, Pakistan",
+      experienceLevel: "Intermediate",
+    },
     create: {
-      slug: "network-forensics-basics",
-      title: "Network Forensics Basics",
-      description:
-        "Introduction to packet capture analysis, Wireshark, and network-level threat detection.",
-      status: "DRAFT",
-      startTime: hoursFromNow(336),
-      endTime: hoursFromNow(338),
-      registrationOpen: false,
-      attendanceOpen: false,
+      email: "ali@example.com",
+      name: "Ali Khan",
+      whatsapp: "+923001234567",
+      organization: "FAST NUCES",
+      countryCity: "Islamabad, Pakistan",
+      experienceLevel: "Intermediate",
     },
   });
 
-  // ── Users & Registrations ────────────────────────────────────────────
-  const emails = [
-    "test@cgs.dev",
-    "member1@example.com",
-    "member2@example.com",
-    "member3@example.com",
-    "member4@example.com",
-    "member5@example.com",
-    "member6@example.com",
-    "member7@example.com",
+  // Participant B: Registered + S1 only -> NOT ELIGIBLE
+  const userB = await prisma.user.upsert({
+    where: { email: "ahmed@example.com" },
+    update: {
+      name: "Ahmed Raza",
+      whatsapp: "+923007654321",
+      organization: "NUST",
+      countryCity: "Islamabad, Pakistan",
+      experienceLevel: "Beginner",
+    },
+    create: {
+      email: "ahmed@example.com",
+      name: "Ahmed Raza",
+      whatsapp: "+923007654321",
+      organization: "NUST",
+      countryCity: "Islamabad, Pakistan",
+      experienceLevel: "Beginner",
+    },
+  });
+
+  // Participant C: Registered + S1 + S2 -> NOT ELIGIBLE
+  const userC = await prisma.user.upsert({
+    where: { email: "sara@example.com" },
+    update: {
+      name: "Sara Ali",
+      whatsapp: "+923009876543",
+      organization: "GIKI",
+      countryCity: "Topi, Pakistan",
+      experienceLevel: "Beginner",
+    },
+    create: {
+      email: "sara@example.com",
+      name: "Sara Ali",
+      whatsapp: "+923009876543",
+      organization: "GIKI",
+      countryCity: "Topi, Pakistan",
+      experienceLevel: "Beginner",
+    },
+  });
+
+  // Participant D: Registered + S2 + S3 -> NOT ELIGIBLE
+  const userD = await prisma.user.upsert({
+    where: { email: "bilal@example.com" },
+    update: {
+      name: "Bilal Tariq",
+      whatsapp: "+923005554433",
+      organization: "LUMS",
+      countryCity: "Lahore, Pakistan",
+      experienceLevel: "Advanced",
+    },
+    create: {
+      email: "bilal@example.com",
+      name: "Bilal Tariq",
+      whatsapp: "+923005554433",
+      organization: "LUMS",
+      countryCity: "Lahore, Pakistan",
+      experienceLevel: "Advanced",
+    },
+  });
+
+  // Participant E: Unregistered participant (no registration record)
+  const userE = await prisma.user.upsert({
+    where: { email: "usman.unreg@example.com" },
+    update: {
+      name: "Usman Unregistered",
+      organization: "Independent",
+      countryCity: "Karachi, Pakistan",
+    },
+    create: {
+      email: "usman.unreg@example.com",
+      name: "Usman Unregistered",
+      organization: "Independent",
+      countryCity: "Karachi, Pakistan",
+    },
+  });
+
+  // Participant F: Registered + S1 attendance (duplicate test)
+  const userF = await prisma.user.upsert({
+    where: { email: "fatima@example.com" },
+    update: {
+      name: "Fatima Noor",
+      whatsapp: "+923002223344",
+      organization: "UET Lahore",
+      countryCity: "Lahore, Pakistan",
+      experienceLevel: "Beginner",
+    },
+    create: {
+      email: "fatima@example.com",
+      name: "Fatima Noor",
+      whatsapp: "+923002223344",
+      organization: "UET Lahore",
+      countryCity: "Lahore, Pakistan",
+      experienceLevel: "Beginner",
+    },
+  });
+
+  // Additional registered participants for realistic cohort stats
+  const cohortUsers = [
+    { email: "zainab@example.com", name: "Zainab Malik", org: "COMSATS", city: "Islamabad", exp: "Intermediate" },
+    { email: "hamza@example.com", name: "Hamza Sheikh", org: "FAST NUCES", city: "Karachi", exp: "Advanced" },
+    { email: "aisha@example.com", name: "Aisha Siddiqui", org: "Bahria University", city: "Islamabad", exp: "Beginner" },
   ];
-  const names = [
-    "Test Member",
-    "Ananya Gupta",
-    "Karan Mehta",
-    "Sara Khan",
-    "Vikram Rao",
-    "Neha Joshi",
-    "Ali Hassan",
-    "Fatima Zahra",
-  ];
 
-  const users: { id: string }[] = [];
-  for (let i = 0; i < emails.length; i++) {
-    const user = await prisma.user.upsert({
-      where: { email: emails[i] },
-      update: {},
-      create: { email: emails[i], name: names[i] },
-    });
-    users.push(user);
-  }
-
-  // Register all users for the active session
-  for (const user of users) {
-    await prisma.registration.upsert({
-      where: {
-        userId_sessionId: { userId: user.id, sessionId: active.id },
+  const cohort = [];
+  for (const c of cohortUsers) {
+    const u = await prisma.user.upsert({
+      where: { email: c.email },
+      update: {
+        name: c.name,
+        organization: c.org,
+        countryCity: c.city,
+        experienceLevel: c.exp,
       },
-      update: {},
-      create: { userId: user.id, sessionId: active.id, source: "google-sheets" },
-    });
-  }
-
-  // Register some for the upcoming session
-  for (let i = 0; i < 5; i++) {
-    await prisma.registration.upsert({
-      where: {
-        userId_sessionId: { userId: users[i].id, sessionId: upcoming.id },
+      create: {
+        email: c.email,
+        name: c.name,
+        organization: c.org,
+        countryCity: c.city,
+        experienceLevel: c.exp,
       },
-      update: {},
-      create: { userId: users[i].id, sessionId: upcoming.id, source: "google-sheets" },
     });
+    cohort.push(u);
   }
 
-  // Register some for the past session
-  for (let i = 0; i < 4; i++) {
-    await prisma.registration.upsert({
-      where: {
-        userId_sessionId: { userId: users[i].id, sessionId: past.id },
-      },
-      update: {},
-      create: { userId: users[i].id, sessionId: past.id, source: "google-sheets" },
-    });
+  // ── 6. Registrations (ONE Google Form registers participants for the bootcamp) ──
+  const registeredUsers = [userA, userB, userC, userD, userF, ...cohort];
+  const allSessions = [session1, session2, session3];
+
+  for (const user of registeredUsers) {
+    for (const session of allSessions) {
+      await prisma.registration.upsert({
+        where: {
+          userId_sessionId: { userId: user.id, sessionId: session.id },
+        },
+        update: {},
+        create: {
+          userId: user.id,
+          sessionId: session.id,
+          source: "google-sheets",
+        },
+      });
+    }
   }
 
-  // ── Attendance ───────────────────────────────────────────────────────
+  // NOTE: userE is intentionally NOT registered!
+
+  // ── 7. Attendance Records ───────────────────────────────────────────
+  // Participant A: S1 + S2 + S3 (ELIGIBLE)
   await prisma.attendance.upsert({
-    where: { userId_sessionId: { userId: users[0].id, sessionId: past.id } },
+    where: { userId_sessionId: { userId: userA.id, sessionId: session1.id } },
     update: {},
-    create: {
-      userId: users[0].id,
-      sessionId: past.id,
-      method: "portal",
-      markedAt: hoursFromNow(-95),
-    },
+    create: { userId: userA.id, sessionId: session1.id, method: "portal", markedAt: hoursFromNow(-1) },
   });
   await prisma.attendance.upsert({
-    where: { userId_sessionId: { userId: users[1].id, sessionId: past.id } },
+    where: { userId_sessionId: { userId: userA.id, sessionId: session2.id } },
     update: {},
-    create: {
-      userId: users[1].id,
-      sessionId: past.id,
-      method: "manual-override",
-      overrideReason: "Joined the session late through the Meet link.",
-      markedAt: hoursFromNow(-94),
-    },
+    create: { userId: userA.id, sessionId: session2.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userA.id, sessionId: session3.id } },
+    update: {},
+    create: { userId: userA.id, sessionId: session3.id, method: "portal", markedAt: hoursFromNow(-1) },
   });
 
-  // ── System Settings ──────────────────────────────────────────────────
+  // Participant B: S1 only (NOT ELIGIBLE)
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userB.id, sessionId: session1.id } },
+    update: {},
+    create: { userId: userB.id, sessionId: session1.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+
+  // Participant C: S1 + S2 (NOT ELIGIBLE)
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userC.id, sessionId: session1.id } },
+    update: {},
+    create: { userId: userC.id, sessionId: session1.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userC.id, sessionId: session2.id } },
+    update: {},
+    create: { userId: userC.id, sessionId: session2.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+
+  // Participant D: S2 + S3 (NOT ELIGIBLE)
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userD.id, sessionId: session2.id } },
+    update: {},
+    create: { userId: userD.id, sessionId: session2.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userD.id, sessionId: session3.id } },
+    update: {},
+    create: { userId: userD.id, sessionId: session3.id, method: "portal", markedAt: hoursFromNow(-1) },
+  });
+
+  // Participant E: Attended S1, S2, S3 but Unregistered -> NOT ELIGIBLE
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userE.id, sessionId: session1.id } },
+    update: {},
+    create: { userId: userE.id, sessionId: session1.id, method: "portal" },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userE.id, sessionId: session2.id } },
+    update: {},
+    create: { userId: userE.id, sessionId: session2.id, method: "portal" },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userE.id, sessionId: session3.id } },
+    update: {},
+    create: { userId: userE.id, sessionId: session3.id, method: "portal" },
+  });
+
+  // Participant F: S1 attendance
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: userF.id, sessionId: session1.id } },
+    update: {},
+    create: { userId: userF.id, sessionId: session1.id, method: "portal" },
+  });
+
+  // Cohort attendance (Zainab attended S1+S2+S3, Hamza attended S1+S3, Aisha attended S1)
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[0].id, sessionId: session1.id } },
+    update: {},
+    create: { userId: cohort[0].id, sessionId: session1.id, method: "portal" },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[0].id, sessionId: session2.id } },
+    update: {},
+    create: { userId: cohort[0].id, sessionId: session2.id, method: "portal" },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[0].id, sessionId: session3.id } },
+    update: {},
+    create: { userId: cohort[0].id, sessionId: session3.id, method: "portal" },
+  });
+
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[1].id, sessionId: session1.id } },
+    update: {},
+    create: { userId: cohort[1].id, sessionId: session1.id, method: "portal" },
+  });
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[1].id, sessionId: session3.id } },
+    update: {},
+    create: { userId: cohort[1].id, sessionId: session3.id, method: "portal" },
+  });
+
+  await prisma.attendance.upsert({
+    where: { userId_sessionId: { userId: cohort[2].id, sessionId: session1.id } },
+    update: {},
+    create: { userId: cohort[2].id, sessionId: session1.id, method: "portal" },
+  });
+
+  // ── 8. System Settings ───────────────────────────────────────────────
   const settings = [
     ["portal.open", "true"],
     ["registration.open", "true"],
@@ -312,49 +563,25 @@ async function main() {
   for (const [key, value] of settings) {
     await prisma.systemSetting.upsert({
       where: { key },
-      update: {},
+      update: { value },
       create: { key, value },
     });
   }
 
-  // ── Audit Log Samples ────────────────────────────────────────────────
-  await prisma.auditLog.createMany({
-    data: [
-      {
-        adminId: admin.id,
-        action: "admin.login",
-        metadata: JSON.stringify({ email: adminEmail }),
-        createdAt: hoursFromNow(-100),
-      },
-      {
-        adminId: admin.id,
-        action: "connection.create",
-        targetType: "GoogleSheetConnection",
-        targetId: registrationConn.id,
-        metadata: JSON.stringify({ name: registrationConn.name, spreadsheetId: registrationConn.spreadsheetId }),
-        createdAt: hoursFromNow(-99),
-      },
-      {
-        adminId: admin.id,
-        action: "session.create",
-        targetType: "Session",
-        targetId: active.id,
-        metadata: JSON.stringify({ title: active.title }),
-        createdAt: hoursFromNow(-98),
-      },
-    ],
-  });
-
-  console.log("Seed complete:");
-  console.log("  Session #1 Reg Sheet :", registrationConn.spreadsheetId);
-  console.log("  Session #1 Feedback  :", "1IuvGQkY5sOUyoXulDr9w3bUPUY56Pi-_NFWwe6Tw_aM");
-  console.log("  Active session       :", active.title);
-  console.log("  Upcoming             :", upcoming.title, ",", upcoming2.title);
+  console.log("🎉 Seed finished successfully!");
+  console.log("📊 Summary of Test Participants:");
+  console.log("   • Participant A (ali@example.com): Reg ✓ | S1 ✓ | S2 ✓ | S3 ✓ -> ELIGIBLE");
+  console.log("   • Participant B (ahmed@example.com): Reg ✓ | S1 ✓ | S2 ✗ | S3 ✗ -> NOT ELIGIBLE");
+  console.log("   • Participant C (sara@example.com): Reg ✓ | S1 ✓ | S2 ✓ | S3 ✗ -> NOT ELIGIBLE");
+  console.log("   • Participant D (bilal@example.com): Reg ✓ | S1 ✗ | S2 ✓ | S3 ✓ -> NOT ELIGIBLE");
+  console.log("   • Participant E (usman.unreg@example.com): Reg ✗ | S1 ✓ | S2 ✓ | S3 ✓ -> NOT ELIGIBLE");
+  console.log("   • Participant F (fatima@example.com): Reg ✓ | S1 ✓ (Duplicate test candidate)");
+  console.log("   • Cohort Participant Zainab (zainab@example.com): Reg ✓ | S1 ✓ | S2 ✓ | S3 ✓ -> ELIGIBLE");
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("❌ Seed error:", e);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());

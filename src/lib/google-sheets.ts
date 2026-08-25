@@ -82,11 +82,30 @@ export async function syncConnection(connectionId: string): Promise<SyncSummary>
     const nameIdx = header.findIndex(
       (h) => /full\s*name/i.test(h) || (/name/i.test(h) && !/email/i.test(h))
     );
+    const whatsappIdx = header.findIndex((h) =>
+      /(whatsapp|phone|contact|mobile|cell|number)/i.test(h)
+    );
+    const orgIdx = header.findIndex((h) =>
+      /(organization|organisation|university|institute|college|company|affiliation)/i.test(h)
+    );
+    const cityIdx = header.findIndex((h) =>
+      /(city|country|location)/i.test(h)
+    );
+    const expIdx = header.findIndex((h) =>
+      /(experience|level|skill|background)/i.test(h)
+    );
+
     if (emailIdx === -1) {
       throw new Error("No email column found in the sheet headers");
     }
 
-    const sessions = connection.sessions;
+    let sessions = connection.sessions;
+    if (sessions.length === 0) {
+      sessions = await prisma.session.findMany({
+        where: { isActive: true },
+      });
+    }
+
     const seenEmails = new Set<string>();
 
     for (let i = 1; i < rows.length; i++) {
@@ -105,11 +124,26 @@ export async function syncConnection(connectionId: string): Promise<SyncSummary>
 
       const name =
         nameIdx >= 0 ? String(row[nameIdx] ?? "").trim().slice(0, 200) : "";
+      const whatsapp =
+        whatsappIdx >= 0 ? String(row[whatsappIdx] ?? "").trim().slice(0, 50) : "";
+      const organization =
+        orgIdx >= 0 ? String(row[orgIdx] ?? "").trim().slice(0, 200) : "";
+      const countryCity =
+        cityIdx >= 0 ? String(row[cityIdx] ?? "").trim().slice(0, 100) : "";
+      const experienceLevel =
+        expIdx >= 0 ? String(row[expIdx] ?? "").trim().slice(0, 100) : "";
 
       let user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
         user = await prisma.user.create({
-          data: { email, name: name || undefined },
+          data: {
+            email,
+            name: name || undefined,
+            whatsapp: whatsapp || undefined,
+            organization: organization || undefined,
+            countryCity: countryCity || undefined,
+            experienceLevel: experienceLevel || undefined,
+          },
         });
         for (const s of sessions) {
           await prisma.registration.create({
@@ -118,12 +152,26 @@ export async function syncConnection(connectionId: string): Promise<SyncSummary>
         }
         summary.created += sessions.length;
       } else {
-        if (name && !user.name) {
+        const updateData: {
+          name?: string;
+          whatsapp?: string;
+          organization?: string;
+          countryCity?: string;
+          experienceLevel?: string;
+        } = {};
+        if (name && !user.name) updateData.name = name;
+        if (whatsapp && !user.whatsapp) updateData.whatsapp = whatsapp;
+        if (organization && !user.organization) updateData.organization = organization;
+        if (countryCity && !user.countryCity) updateData.countryCity = countryCity;
+        if (experienceLevel && !user.experienceLevel) updateData.experienceLevel = experienceLevel;
+
+        if (Object.keys(updateData).length > 0) {
           await prisma.user.update({
             where: { id: user.id },
-            data: { name },
+            data: updateData,
           });
         }
+
         for (const s of sessions) {
           const existing = await prisma.registration.findUnique({
             where: { userId_sessionId: { userId: user.id, sessionId: s.id } },

@@ -13,14 +13,19 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  whatsapp        String?
+  organization    String?
+  countryCity     String?
+  experienceLevel String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   registrations Registration[]
   attendance    Attendance[]
+  certificates  Certificate[]
 }
 
 model Session {
@@ -35,6 +40,9 @@ model Session {
   endTime         DateTime
   timezone        String    @default("Asia/Karachi")
   meetLink        String?
+
+  sessionNumber   Int?      // 1, 2, 3 for CGS Bootcamp sessions
+  bootcampTag     String?   @default("cgs-bootcamp-2026")
 
   registrationOpen    Boolean   @default(true)
   attendanceOpen      Boolean   @default(false)
@@ -229,4 +237,25 @@ model SyncRun {
   connection GoogleSheetConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
   @@index([connectionId, startedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Certificate System
+// ---------------------------------------------------------------------------
+
+model Certificate {
+  id                String   @id @default(cuid())
+  certificateNumber String   @unique // e.g. CGS-BC-2026-XXXXXX
+  userId            String
+  recipientName     String
+  recipientEmail    String
+  bootcampTitle     String   @default("CyberGuardiansSociety Cybersecurity Bootcamp")
+  issuedAt          DateTime @default(now())
+  status            String   @default("ISSUED") // ISSUED, REVOKED
+  metadata          String?  // JSON string with issue details, audit trail
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([certificateNumber])
 }

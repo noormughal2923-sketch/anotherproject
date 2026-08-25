@@ -18,6 +18,8 @@ import {
   Menu,
   X,
   ChevronRight,
+  Shield,
+  Award,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -27,7 +29,11 @@ import { ADMIN_BASE_PATH } from "@/lib/constants";
 const navSections = [
   {
     title: "Workspace",
-    links: [{ href: ADMIN_BASE_PATH, label: "Overview", icon: LayoutDashboard }],
+    links: [
+      { href: ADMIN_BASE_PATH, label: "Overview", icon: LayoutDashboard },
+      { href: `${ADMIN_BASE_PATH}/bootcamp`, label: "Bootcamp", icon: Shield },
+      { href: `${ADMIN_BASE_PATH}/certificates`, label: "Certificates", icon: Award },
+    ],
   },
   {
     title: "Attendance operations",

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
   { href: "/sessions", label: "Sessions" },
   { href: "/attendance", label: "Attendance" },
+  { href: "/verify", label: "Verify Certificate" },
   { href: "/status", label: "Platform status" },
 ];
 
