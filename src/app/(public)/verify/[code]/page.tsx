@@ -1,12 +1,18 @@
-import { notFound } from "next/navigation";
-import { Shield, CheckCircle2, CalendarDays, Building2, Award } from "lucide-react";
+import Link from "next/link";
+import { Shield, AlertCircle, ArrowLeft, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { verifyCertificate } from "@/lib/certificates";
 import { formatDateTime } from "@/lib/datetime";
+import { VerifyResultClient } from "./verify-result-client";
 
-export const metadata = { title: "Verify Certificate" };
+export const metadata = {
+  title: "Verify Certificate | CyberGuardiansSociety",
+  description: "Verify recipient authenticity and official certificate credentials.",
+};
+
 export const dynamic = "force-dynamic";
 
 export default async function VerifyCertificatePage({
@@ -15,88 +21,79 @@ export default async function VerifyCertificatePage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
+  const decodedCode = decodeURIComponent(code).trim();
 
-  const cert = await verifyCertificate(code);
+  const cert = await verifyCertificate(decodedCode);
 
   if (!cert) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-24 text-center sm:px-6 lg:px-8 animate-fade-in">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-500">
-          <Shield className="h-8 w-8" />
+      <div className="mx-auto max-w-lg px-4 py-20 sm:px-6 lg:px-8 animate-fade-in font-sans">
+        <div className="text-center mb-6">
+          <Badge variant="destructive" className="mb-3 uppercase tracking-wider text-xs">
+            <Shield className="h-3 w-3 mr-1" /> Credential Check
+          </Badge>
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10 text-red-400">
+            <AlertCircle className="h-8 w-8" />
+          </div>
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            Certificate Not Found
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground">
+            No valid certificate record was found matching the code:
+          </p>
+          <p className="mt-2 inline-block px-3 py-1 bg-muted/60 rounded-md font-mono text-sm text-foreground border border-border">
+            {decodedCode}
+          </p>
         </div>
-        <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground">
-          Certificate Not Found
-        </h1>
-        <p className="mt-4 text-sm text-muted-foreground">
-          No valid certificate was found for the code <strong className="text-foreground font-mono">{code}</strong>.
-          Please check the code and try again.
-        </p>
+
+        <Card className="cgs-glow-card border-border/80 bg-card shadow-xl shadow-black/20">
+          <CardContent className="p-6 space-y-4 text-xs text-muted-foreground">
+            <div className="space-y-2">
+              <p className="font-semibold text-foreground text-sm">Please verify the following:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Ensure you entered the exact certificate ID printed on your certificate document.</li>
+                <li>Check for typos or omitted hyphens (e.g. <span className="font-mono text-foreground">CGSS2026-18082601-...</span> or <span className="font-mono text-foreground">CGSS-200826-...</span>).</li>
+                <li>Certificates are issued only to participants who attended the respective bootcamp sessions.</li>
+              </ul>
+            </div>
+
+            <div className="pt-3 border-t border-border/60 flex flex-col gap-2">
+              <Link href="/verify" className="w-full">
+                <Button variant="cgs" className="w-full text-xs font-semibold gap-1.5">
+                  <Search className="h-3.5 w-3.5" /> Try Another Certificate Number
+                </Button>
+              </Link>
+              <Link href="/" className="w-full">
+                <Button variant="outline" className="w-full text-xs gap-1.5">
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Home
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  const formattedDate = formatDateTime(cert.issuedAt, "Asia/Karachi");
+
   return (
-    <div className="mx-auto max-w-xl px-4 py-16 sm:px-6 lg:px-8 animate-fade-in">
-      <div className="text-center mb-8">
-        <Badge variant="cgs" className="mb-3 uppercase tracking-wider text-xs">
-          <Shield className="h-3 w-3 mr-1" /> Certificate Verified
-        </Badge>
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-          Authenticity Confirmed
-        </h1>
-      </div>
-
-      <Card className="cgs-glow-card border-primary/20 bg-card shadow-2xl shadow-black/20">
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center text-center mb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-950/30 mb-4">
-              <CheckCircle2 className="h-9 w-9" />
-            </div>
-            <Badge variant="success" className="mb-2">Valid Certificate</Badge>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between items-center py-2.5 border-b border-border/40">
-              <span className="text-muted-foreground font-medium">Certificate Number</span>
-              <span className="font-heading font-bold text-primary font-mono text-xs">{cert.certificateNumber}</span>
-            </div>
-            <div className="flex justify-between items-center py-2.5 border-b border-border/40">
-              <span className="text-muted-foreground font-medium">Recipient</span>
-              <span className="font-semibold text-foreground">{cert.recipientName}</span>
-            </div>
-            <div className="flex justify-between items-center py-2.5 border-b border-border/40">
-              <span className="text-muted-foreground font-medium">Email</span>
-              <span className="text-foreground">{cert.recipientEmail}</span>
-            </div>
-            {cert.organization && (
-              <div className="flex justify-between items-center py-2.5 border-b border-border/40">
-                <span className="text-muted-foreground font-medium flex items-center gap-1">
-                  <Building2 className="h-3.5 w-3.5" /> Organization
-                </span>
-                <span className="text-foreground">{cert.organization}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center py-2.5 border-b border-border/40">
-              <span className="text-muted-foreground font-medium flex items-center gap-1">
-                <Award className="h-3.5 w-3.5" /> Program
-              </span>
-              <span className="text-foreground">{cert.bootcampTitle}</span>
-            </div>
-            <div className="flex justify-between items-center py-2.5">
-              <span className="text-muted-foreground font-medium flex items-center gap-1">
-                <CalendarDays className="h-3.5 w-3.5" /> Issued Date
-              </span>
-              <span className="text-foreground">{formatDateTime(cert.issuedAt, "Asia/Karachi")}</span>
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-xl bg-emerald-500/10 border border-emerald-500/25 p-4 text-center">
-            <p className="text-xs text-emerald-400 font-semibold">
-              ✓ This certificate is authentic and was issued by CyberGuardiansSociety (CGS).
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <VerifyResultClient
+      certificate={{
+        certificateNumber: cert.certificateNumber,
+        recipientName: cert.recipientName,
+        recipientEmail: cert.recipientEmail,
+        bootcampTitle: cert.bootcampTitle,
+        sessionName: cert.sessionName,
+        sessionNumber: cert.sessionNumber,
+        issuedAt: cert.issuedAt,
+        organization: cert.organization,
+        status: cert.status,
+        hasPdf: cert.hasPdf,
+        downloadUrl: cert.downloadUrl,
+        previewUrl: cert.previewUrl,
+        formattedDate,
+      }}
+    />
   );
 }

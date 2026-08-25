@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { findAssetCertificate } from "@/lib/certificate-assets";
 
 const BOOTCAMP_TAG = "cgs-bootcamp-2026";
 
@@ -362,31 +363,65 @@ export async function issueAllEligibleCertificates(): Promise<{
 
 /**
  * Verify a certificate by its number (public endpoint use).
+ * Supports both pre-issued Session 1 & 2 asset certificates and database certificates.
  */
 export async function verifyCertificate(code: string) {
-  const cert = await prisma.certificate.findUnique({
-    where: { certificateNumber: code.toUpperCase().trim() },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true,
-          organization: true,
-        },
-      },
-    },
-  });
+  if (!code || typeof code !== "string") return null;
 
-  if (!cert || cert.status !== "ISSUED") {
-    return null;
+  // 1. Check pre-issued asset certificates (Session 1 & Session 2)
+  const assetCert = findAssetCertificate(code);
+  if (assetCert) {
+    return {
+      certificateNumber: assetCert.certificateNumber,
+      recipientName: assetCert.recipientName,
+      recipientEmail: assetCert.recipientEmail,
+      bootcampTitle: assetCert.bootcampTitle,
+      sessionName: assetCert.sessionName,
+      sessionNumber: assetCert.sessionNumber,
+      issuedAt: assetCert.issuedAt,
+      organization: assetCert.organization,
+      status: assetCert.status,
+      hasPdf: true,
+      downloadUrl: `/api/certificates/download/${encodeURIComponent(assetCert.certificateNumber)}`,
+      previewUrl: `/api/certificates/preview/${encodeURIComponent(assetCert.certificateNumber)}`,
+    };
   }
 
-  return {
-    certificateNumber: cert.certificateNumber,
-    recipientName: cert.recipientName,
-    recipientEmail: cert.recipientEmail,
-    bootcampTitle: cert.bootcampTitle,
-    issuedAt: cert.issuedAt,
-    organization: cert.user.organization,
-  };
+  // 2. Check database issued certificates
+  try {
+    const cert = await prisma.certificate.findUnique({
+      where: { certificateNumber: code.toUpperCase().trim() },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            organization: true,
+          },
+        },
+      },
+    });
+
+    if (cert && cert.status === "ISSUED") {
+      return {
+        certificateNumber: cert.certificateNumber,
+        recipientName: cert.recipientName,
+        recipientEmail: cert.recipientEmail,
+        bootcampTitle: cert.bootcampTitle,
+        sessionName: "CGS Cybersecurity Bootcamp",
+        sessionNumber: null,
+        issuedAt: cert.issuedAt,
+        organization: cert.user?.organization || "CyberGuardiansSociety",
+        status: cert.status,
+        hasPdf: false,
+        downloadUrl: `/api/certificates/download/${encodeURIComponent(cert.certificateNumber)}`,
+        previewUrl: `/api/certificates/preview/${encodeURIComponent(cert.certificateNumber)}`,
+      };
+    }
+  } catch (err) {
+    console.error("[verifyCertificate] Database lookup error:", err);
+  }
+
+  return null;
 }
+
