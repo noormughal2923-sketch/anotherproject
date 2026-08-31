@@ -47,8 +47,17 @@ export default async function HomePage() {
     );
   }
 
+  type UpcomingSession = {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    startTime: Date;
+    speakers: { speaker: { name: string } }[];
+  };
+
   let activeSession = null;
-  let upcoming: Array<any> = [];
+  let upcoming: UpcomingSession[] = [];
   try {
     const [resActive, resUpcoming] = await Promise.all([
       getActiveSession(),
@@ -402,7 +411,7 @@ export default async function HomePage() {
                     <div className="mt-4 flex items-center gap-2 border-t border-border/60 pt-3">
                       <span className="shrink-0 text-[11px] font-medium text-muted-foreground">Speakers:</span>
                       <span className="min-w-0 truncate text-xs font-medium text-foreground">
-                        {s.speakers.map((sp: any) => sp.speaker.name).join(", ")}
+                        {s.speakers.map((sp) => sp.speaker.name).join(", ")}
                       </span>
                     </div>
                   )}

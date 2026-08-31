@@ -7,7 +7,6 @@ import {
   Mic,
   RefreshCcw,
   Users,
-  Plus,
   Radio,
   BarChart3,
   Percent,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, ClipboardCheck, Video, ExternalLink, User, Building2 } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Video, ExternalLink, Building2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

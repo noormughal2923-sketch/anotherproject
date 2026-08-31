@@ -14,9 +14,22 @@ export const dynamic = "force-dynamic";
 export default async function SessionsPage() {
   const settings = await getSettings();
   const now = new Date();
+  type SessionItem = {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    startTime: Date;
+    endTime: Date;
+    meetLink: string | null;
+    registrationOpen: boolean;
+    speakers: { speaker: { name: string } }[];
+    _count: { registrations: number };
+  };
+
   let active = null;
-  let upcoming: Array<any> = [];
-  let past: Array<any> = [];
+  let upcoming: SessionItem[] = [];
+  let past: SessionItem[] = [];
   try {
     const [resActive, resUpcoming, resPast] = await Promise.all([
       getActiveSession(),
@@ -117,7 +130,7 @@ export default async function SessionsPage() {
                     <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2">
                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-foreground font-medium truncate">
-                        {s.speakers.map((sp: any) => sp.speaker.name).join(", ")}
+                        {s.speakers.map((sp) => sp.speaker.name).join(", ")}
                       </span>
                     </div>
                   )}

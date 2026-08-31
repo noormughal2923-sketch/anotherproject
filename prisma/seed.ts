@@ -17,7 +17,7 @@ async function main() {
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || "change-me-please";
   const passwordHash = await hash(adminPassword, 12);
 
-  const admin = await prisma.admin.upsert({
+  await prisma.admin.upsert({
     where: { email: adminEmail },
     update: {
       passwordHash,

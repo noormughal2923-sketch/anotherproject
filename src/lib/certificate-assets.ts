@@ -5,7 +5,7 @@ export interface AssetCertificate {
   certificateNumber: string;
   recipientName: string;
   recipientEmail: string;
-  sessionNumber: 1 | 2;
+  sessionNumber: 1 | 2 | 3;
   sessionName: string;
   bootcampTitle: string;
   issuedAt: Date;
@@ -18,10 +18,6 @@ export interface AssetCertificate {
 
 // In-memory cache for loaded certificates
 let cachedCertificates: Map<string, AssetCertificate> | null = null;
-
-function normalizeCertCode(code: string): string {
-  return code.toUpperCase().trim().replace(/[\s\-_]+/g, "-");
-}
 
 function normalizeKey(code: string): string {
   return code.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -145,6 +141,46 @@ export function loadAssetCertificates(): Map<string, AssetCertificate> {
     }
   }
 
+  // 3. Cyber Attack Awareness Bootcamp (Session 3 / CAAB)
+  const caabJsonPath = path.join(cwd, "certificate_ids.json");
+  const caabFolderPath = path.join(cwd, "Cyber Attack Awareness Bootcamp");
+
+  if (fs.existsSync(caabJsonPath)) {
+    try {
+      const caabRaw = fs.readFileSync(caabJsonPath, "utf-8");
+      const caabData: Record<string, { name: string; cert_id: string }> = JSON.parse(caabRaw);
+
+      for (const [email, item] of Object.entries(caabData)) {
+        const certId = item.cert_id.trim();
+        const studentName = item.name.trim();
+        const pdfFile = findPdfForName(caabFolderPath, studentName);
+        const cleanSafeName = studentName.replace(/[^\w\s-]/g, "").replace(/\s+/g, "_");
+
+        const certObj: AssetCertificate = {
+          certificateNumber: certId,
+          recipientName: studentName,
+          recipientEmail: email.trim(),
+          sessionNumber: 3,
+          sessionName: "Cyber Attack Awareness Bootcamp",
+          bootcampTitle: "CyberGuardiansSociety - Cyber Attack Awareness Bootcamp",
+          issuedAt: new Date("2026-08-30T12:00:00.000Z"),
+          organization: "CyberGuardiansSociety",
+          status: "ISSUED",
+          pdfFileName: pdfFile || `${studentName}.pdf`,
+          pdfRelativePath: pdfFile ? path.join("Cyber Attack Awareness Bootcamp", pdfFile) : "",
+          downloadFileName: `${cleanSafeName}_CGS_Cyber_Attack_Awareness_Certificate.pdf`,
+        };
+
+        // Index by original cert_id
+        map.set(certId.toUpperCase(), certObj);
+        // Index by normalized key
+        map.set(normalizeKey(certId), certObj);
+      }
+    } catch (err) {
+      console.error("[loadAssetCertificates] Error loading CAAB certificates:", err);
+    }
+  }
+
   cachedCertificates = map;
   return map;
 }
@@ -191,7 +227,7 @@ export function getAssetCertificatePdfBuffer(code: string): {
   const cert = findAssetCertificate(code);
   if (!cert || !cert.pdfRelativePath) return null;
 
-  const fullPath = path.join(process.cwd(), cert.pdfRelativePath);
+  const fullPath = path.join(/*turbopackIgnore: true*/ process.cwd(), cert.pdfRelativePath);
   if (!fs.existsSync(fullPath)) {
     console.error(`[getAssetCertificatePdfBuffer] File not found: ${fullPath}`);
     return null;

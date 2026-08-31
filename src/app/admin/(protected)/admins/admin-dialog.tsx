@@ -6,7 +6,6 @@ import {
   ShieldCheck,
   Shield,
   Crown,
-  KeyRound,
   Copy,
   Check,
   Eye,
@@ -17,9 +16,7 @@ import {
   Mail,
   Lock,
   AlertCircle,
-  CheckCircle2,
   Loader2,
-  Plus,
   Info,
 } from "lucide-react";
 import { toast } from "sonner";

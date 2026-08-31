@@ -10,16 +10,12 @@ import {
   Radio,
   Sparkles,
   Play,
-  Plus,
-  ArrowRight,
   CheckCircle2,
   AlertCircle,
   Users,
   Search,
   ExternalLink,
-  ChevronRight,
   Sliders,
-  RotateCcw,
   Zap,
   Timer,
   Check,
@@ -28,14 +24,13 @@ import {
   X,
   Lock,
   Unlock,
-  PlusCircle,
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -69,7 +64,6 @@ import {
   quickStartSessionAction,
   extendSessionTimeAction,
   toggleSessionAttendanceAction,
-  toggleSessionRegistrationAction,
   updateSessionSpeakersAction,
   type TimeActionResult,
 } from "./actions";
@@ -124,13 +118,12 @@ export type SerializedSession = {
 export function TimeManagementClient({
   sessions,
   speakers,
-  connections,
   timezone: orgTimezone,
   orgName,
 }: {
   sessions: SerializedSession[];
   speakers: SerializedSpeaker[];
-  connections: { id: string; name: string }[];
+  connections?: { id: string; name: string }[];
   timezone: string;
   orgName: string;
 }) {
@@ -238,17 +231,6 @@ export function TimeManagementClient({
       toast.error(res.error, { id: "attendance" });
     } else {
       toast.success(newState ? "Attendance verification is now OPEN" : "Attendance verification is CLOSED", { id: "attendance" });
-      router.refresh();
-    }
-  }
-
-  async function handleToggleRegistration(sessionId: string, currentState: boolean) {
-    const newState = !currentState;
-    const res = await toggleSessionRegistrationAction(sessionId, newState);
-    if (res.error) {
-      toast.error(res.error);
-    } else {
-      toast.success(newState ? "Registration is now OPEN" : "Registration is CLOSED");
       router.refresh();
     }
   }
@@ -697,7 +679,6 @@ export function TimeManagementClient({
                         <p className="text-xs italic text-muted-foreground/80 py-1">No sessions assigned yet</p>
                       ) : (
                         assignedSessions.map((s) => {
-                          const timing = getSessionTimingStatus(s.startTime, s.endTime, now);
                           return (
                             <div
                               key={s.id}
@@ -873,7 +854,6 @@ function TimeEditDialog({
     session.attendanceEndTime ? utcToZonedLocalInput(session.attendanceEndTime, timezone) : initialEnd
   );
 
-  const [attendanceOpen, setAttendanceOpen] = useState(session.attendanceOpen);
   const [registrationOpen, setRegistrationOpen] = useState(session.registrationOpen);
 
   // Assigned Speakers (ordered array of speaker IDs)

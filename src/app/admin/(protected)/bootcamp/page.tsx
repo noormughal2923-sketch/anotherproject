@@ -1,6 +1,4 @@
-import { getBootcampSessions } from "@/lib/certificates";
-import { computeBootcampEligibility } from "@/lib/certificates";
-import { prisma } from "@/lib/prisma";
+import { getBootcampSessions, computeBootcampEligibility } from "@/lib/certificates";
 import { BootcampClient } from "./bootcamp-client";
 
 export const metadata = { title: "Bootcamp Management" };

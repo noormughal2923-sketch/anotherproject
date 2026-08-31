@@ -52,7 +52,7 @@ export default async function VerifyCertificatePage({
               <p className="font-semibold text-foreground text-sm">Please verify the following:</p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Ensure you entered the exact certificate ID printed on your certificate document.</li>
-                <li>Check for typos or omitted hyphens (e.g. <span className="font-mono text-foreground">CGSS2026-18082601-...</span> or <span className="font-mono text-foreground">CGSS-200826-...</span>).</li>
+                <li>Check for typos or omitted hyphens (e.g. <span className="font-mono text-foreground">CGSS2026-18082601-...</span>, <span className="font-mono text-foreground">CGSS-200826-...</span>, or <span className="font-mono text-foreground">CGS-CAAB-300826-...</span>).</li>
                 <li>Certificates are issued only to participants who attended the respective bootcamp sessions.</li>
               </ul>
             </div>

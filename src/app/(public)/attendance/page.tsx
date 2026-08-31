@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function AttendancePage() {
   const settings = await getSettings();
   let activeSession = null;
-  let upcoming: Array<any> = [];
+  let upcoming: { id: string; title: string; startTime: Date }[] = [];
   try {
     const [resActive, resUpcoming] = await Promise.all([
       getActiveSession(),

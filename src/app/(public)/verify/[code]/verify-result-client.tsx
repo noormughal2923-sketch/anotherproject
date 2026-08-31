@@ -176,14 +176,21 @@ export function VerifyResultClient({ certificate }: VerifyResultClientProps) {
               </div>
 
               {/* DOWNLOAD BUTTON */}
-              <Button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className="w-full sm:w-auto min-w-[200px] h-12 text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-950/40 gap-2 transition-all duration-200 active:scale-95"
-              >
-                <Download className={`h-4 w-4 ${isDownloading ? "animate-bounce" : ""}`} />
-                {isDownloading ? "Downloading..." : "Download Certificate"}
-              </Button>
+              {certificate.hasPdf ? (
+                <Button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="w-full sm:w-auto min-w-[200px] h-12 text-sm font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-950/40 gap-2 transition-all duration-200 active:scale-95"
+                >
+                  <Download className={`h-4 w-4 ${isDownloading ? "animate-bounce" : ""}`} />
+                  {isDownloading ? "Downloading..." : "Download Certificate"}
+                </Button>
+              ) : (
+                <div className="text-xs text-muted-foreground text-center sm:text-right">
+                  <p className="font-semibold text-foreground">Certificate Verified ✓</p>
+                  <p>PDF download not available for this certificate type.</p>
+                </div>
+              )}
             </div>
 
             {/* View Mode Toggle */}
@@ -332,13 +339,15 @@ export function VerifyResultClient({ certificate }: VerifyResultClientProps) {
               </Button>
             </Link>
 
-            <Button
-              onClick={handleDownload}
-              variant="cgs"
-              className="w-full sm:w-auto text-xs font-semibold gap-1.5"
-            >
-              <Download className="h-3.5 w-3.5" /> Download PDF
-            </Button>
+            {certificate.hasPdf && (
+              <Button
+                onClick={handleDownload}
+                variant="cgs"
+                className="w-full sm:w-auto text-xs font-semibold gap-1.5"
+              >
+                <Download className="h-3.5 w-3.5" /> Download PDF
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

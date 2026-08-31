@@ -48,7 +48,7 @@ export function SessionsClient({
   connections: { id: string; name: string }[];
 }) {
   const router = useRouter();
-  const now = new Date();
+  const [nowTimestamp] = useState(() => Date.now());
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<SessionRow | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -56,9 +56,8 @@ export function SessionsClient({
   function statusOf(s: { startTime: Date | string; endTime: Date | string }) {
     const start = new Date(s.startTime).getTime();
     const end = new Date(s.endTime).getTime();
-    const current = Date.now();
-    if (current >= start && current <= end) return "live";
-    if (current < start) return "upcoming";
+    if (nowTimestamp >= start && nowTimestamp <= end) return "live";
+    if (nowTimestamp < start) return "upcoming";
     return "completed";
   }
 

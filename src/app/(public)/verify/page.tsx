@@ -59,7 +59,7 @@ export default function VerifySearchPage() {
                 <Input
                   id="code"
                   type="text"
-                  placeholder="e.g. CGSS2026-18082601-9614F9A3"
+                  placeholder="e.g. CGS-CAAB-300826-A07C6E1D"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className="pl-9 font-mono uppercase text-sm h-11 border-border focus-visible:ring-primary"
@@ -99,6 +99,13 @@ export default function VerifySearchPage() {
                 className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary transition-colors border border-border/60"
               >
                 Session 2: CGSS-200826-D7235A79
+              </button>
+              <button
+                type="button"
+                onClick={() => setSampleCode("CGS-CAAB-300826-A07C6E1D")}
+                className="text-[11px] font-mono px-2.5 py-1 rounded-md bg-secondary text-secondary-foreground hover:bg-primary/20 hover:text-primary transition-colors border border-border/60"
+              >
+                CAAB: CGS-CAAB-300826-A07C6E1D
               </button>
             </div>
           </div>

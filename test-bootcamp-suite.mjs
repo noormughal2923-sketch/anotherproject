@@ -42,7 +42,6 @@ async function runTests() {
   console.log("\n2️⃣ Verifying Active Session Control & Mutual Exclusivity...");
   const s1 = sessions[0];
   const s2 = sessions[1];
-  const s3 = sessions[2];
 
   // Set Session 2 active, ensure S1 and S3 are closed
   await prisma.$transaction([
@@ -139,7 +138,7 @@ async function runTests() {
         method: "portal",
       },
     });
-  } catch (err) {
+  } catch {
     duplicatePrevented = true;
   }
   assert(duplicatePrevented, "Database uniquely rejects duplicate (userId, sessionId) attendance submission");
